@@ -1,0 +1,52 @@
+# Nombre que verás en la pestaña "Actions" de GitHub
+name: Deploy to GitHub Pages
+
+# Cuándo se ejecuta: en cada push a main, o a mano desde la pestaña Actions
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permisos mínimos: leer el código y publicar en Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si haces dos push seguidos, se cancela la publicación anterior
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  # ===== TRABAJO 1: compilar =====
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Descarga el código del repositorio
+      - uses: actions/checkout@v4
+      # Instala Node LTS y guarda en caché los paquetes de npm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      # Instala las dependencias exactas de package-lock.json
+      - run: npm ci
+      # Compila en modo producción; base-href / porque el sitio vive en la raíz del dominio
+      - run: npx ng build --configuration production --base-href /
+      # Sube la carpeta compilada; "portfolio" es el nombre de tu proyecto
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/portfolio/browser
+
+  # ===== TRABAJO 2: publicar =====
+  deploy:
+    needs: build # espera a que termine la compilación
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # Publica en GitHub Pages
+      - id: deployment
+        uses: actions/deploy-pages@v4
