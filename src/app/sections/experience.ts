@@ -3,89 +3,88 @@ import { PortfolioService } from '../core/portfolio.service';
 import { SectionTitle } from '../shared/section-title';
 import { Reveal } from '../shared/reveal';
 
-// Experiencia laboral como línea de tiempo
-// Cada puesto se ve como vista previa (puesto, empresa, lugar y primer logro); al hacer clic se expande con todos los detalles
+// Experiencia laboral: una tarjeta por puesto con empresa, cliente y sistema
+// Muestra una vista previa (primer logro) y al tocar "Ver detalles" se expande con todos los logros y tecnologías
 @Component({
   selector: 'app-experience',
   imports: [SectionTitle, Reveal],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section id="experience" class="mx-auto max-w-5xl scroll-mt-20 px-6 py-16">
+    <section id="experience" class="section">
       <app-section-title index="01" [title]="data.t().experienceTitle" />
 
-      <ol>
+      <ol class="space-y-4">
         @for (job of data.experience; track job.id) {
-          <!-- appReveal: cada puesto aparece al llegar con el scroll -->
-          <!-- En móvil todo va apilado; desde sm hay 2 columnas: 10rem para la fecha y el resto para el detalle -->
-          <!-- id exp-…: destino del enlace "Ver en experiencia" de cada proyecto -->
-          <li appReveal [id]="'exp-' + job.id" class="group grid scroll-mt-24 gap-2 sm:grid-cols-[10rem_1fr] sm:gap-8">
-            <p class="font-mono text-xs uppercase tracking-wider text-neutral-500 transition-colors group-hover:text-cyan-300 sm:pt-4">{{ data.tr(job.period) }}</p>
+          <li appReveal class="card overflow-hidden transition-colors"
+              [class]="isOpen(job.id) ? 'border-accent/30' : ''">
+            <div class="p-5 sm:p-6">
+              <!-- Periodo y lugar -->
+              <!-- flex-wrap: en pantallas angostas el lugar baja completo a la siguiente línea -->
+              <p class="flex flex-wrap gap-x-3 font-mono text-xs text-zinc-500">
+                <span class="text-accent">{{ data.tr(job.period) }}</span>
+                <span>{{ data.tr(job.location) }}</span>
+              </p>
 
-            <!-- border-l dibuja la línea vertical; pb-10 la alarga hasta el siguiente puesto (el último no lo necesita) -->
-            <div class="relative border-l border-white/10 pb-10 pl-6 group-last:pb-0">
-              <!-- Punto de la línea de tiempo: se enciende en cian al pasar el mouse o cuando el puesto está abierto -->
-              <span aria-hidden="true"
-                    class="absolute -left-[5px] top-5 size-2.5 rounded-full ring-4 ring-neutral-950 transition duration-300 group-hover:scale-125 group-hover:bg-cyan-300"
-                    [class]="isOpen(job.id) ? 'bg-cyan-300 shadow-[0_0_12px_rgb(103_232_249)]' : 'bg-neutral-700'"></span>
+              <!-- Puesto -->
+              <h3 class="mt-2 text-lg font-semibold sm:text-xl">{{ data.tr(job.role) }}</h3>
 
-              <!-- Tarjeta: toda la parte de arriba es un botón que abre y cierra los detalles -->
-              <div class="rounded-2xl border bg-neutral-900/40 backdrop-blur-sm transition-colors duration-300"
-                   [class]="isOpen(job.id) ? 'border-cyan-300/25' : 'border-white/5 hover:border-white/15'">
-                <!-- aria-expanded y aria-controls: el lector de pantalla sabe si está abierto y qué parte controla -->
-                <button type="button" (click)="toggle(job.id)"
-                        [attr.aria-expanded]="isOpen(job.id)" [attr.aria-controls]="'job-' + job.id"
-                        class="w-full cursor-pointer p-5 text-left">
-                  <div class="flex items-start justify-between gap-4">
-                    <div>
-                      <!-- Puesto · Empresa -->
-                      <h3 class="font-medium text-white transition-colors group-hover:text-cyan-100">
-                        {{ data.tr(job.role) }} <span class="text-cyan-300/90">· {{ job.company }}</span>
-                      </h3>
-                      <p class="mt-1 font-mono text-xs text-neutral-500">{{ data.tr(job.location) }}</p>
-                    </div>
-                    <!-- Flecha que gira 180° al abrir -->
-                    <span aria-hidden="true"
-                          class="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border border-white/10 text-neutral-400 transition duration-300"
-                          [class]="isOpen(job.id) ? 'rotate-180 border-cyan-300/40 text-cyan-300' : ''">⌄</span>
-                  </div>
+              <!-- Empresa con enlace a su sitio (si aún no tiene URL se ve igual, pero sin enlace) -->
+              <p class="mt-1 text-sm">
+                @if (job.company.url) {
+                  <a [href]="job.company.url" target="_blank" rel="noopener" class="link-accent font-medium">{{ job.company.name }} ↗</a>
+                } @else {
+                  <span [title]="data.t().linkPending" class="font-medium text-accent/70">{{ job.company.name }}</span>
+                }
+                @if (job.company.note; as note) {
+                  <span class="text-zinc-500"> · {{ data.tr(note) }}</span>
+                }
+              </p>
 
-                  <!-- Vista previa: el primer logro, recortado a 2 líneas; se oculta al abrir porque abajo aparece la lista completa -->
-                  @if (!isOpen(job.id)) {
-                    <p class="mt-3 line-clamp-2 text-sm leading-relaxed text-neutral-400">{{ data.tr(job.highlights)[0] }}</p>
-                  }
-                  <span class="mt-3 inline-block text-xs font-medium text-cyan-300">
-                    {{ isOpen(job.id) ? data.t().hideDetails : data.t().showDetails }}
-                  </span>
-                </button>
+              <!-- Cliente y sistema -->
+              <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+                @if (job.client; as client) {
+                  <dt class="font-mono text-xs uppercase tracking-wider text-zinc-500 leading-5">{{ data.t().clientLabel }}</dt>
+                  <dd class="text-zinc-300">{{ data.tr(client) }}</dd>
+                }
+                @if (job.system; as system) {
+                  <dt class="font-mono text-xs uppercase tracking-wider text-zinc-500 leading-5">{{ data.t().systemLabel }}</dt>
+                  <dd class="text-zinc-300">{{ system }}</dd>
+                }
+              </dl>
 
-                <!-- Detalles: la fila de la grilla pasa de 0fr (alto 0) a 1fr (alto completo), con transición suave -->
-                <div [id]="'job-' + job.id"
-                     class="grid transition-[grid-template-rows] duration-500 ease-out"
-                     [class]="isOpen(job.id) ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
-                  <div class="overflow-hidden">
-                    <div class="px-5 pb-5">
-                      <!-- Todos los logros: tr() devuelve la lista del idioma activo -->
-                      <ul class="space-y-2 text-sm leading-relaxed text-neutral-400">
-                        @for (h of data.tr(job.highlights); track $index) {
-                          <li class="flex gap-2"><span aria-hidden="true" class="text-cyan-400/70">▹</span><span>{{ h }}</span></li>
-                        }
-                      </ul>
-                      <!-- Tecnologías por escrito, tal cual el CV -->
-                      <p class="mt-4 border-t border-white/5 pt-4 text-xs leading-relaxed text-neutral-400">
-                        <span class="font-mono uppercase tracking-wider text-neutral-500">{{ data.t().technologies }}:</span>
-                        {{ job.technologies }}
-                      </p>
-                      <!-- Enlace al proyecto relacionado (baja a su tarjeta en la sección Proyectos) -->
-                      @if (job.projectId) {
-                        <a [href]="'#project-' + job.projectId"
-                           class="mt-3 inline-block text-xs text-cyan-300 transition-colors hover:text-cyan-200">
-                          {{ data.t().projectLink }}: {{ projectTitle(job.projectId) }} ↓
-                        </a>
-                      }
-                    </div>
-                  </div>
+              <!-- Vista previa: el primer logro en 2 líneas; se oculta al abrir porque abajo sale la lista completa -->
+              @if (!isOpen(job.id)) {
+                <p class="mt-4 line-clamp-2 text-sm leading-relaxed">{{ data.tr(job.highlights)[0] }}</p>
+              }
+
+              <!-- Detalles: la fila de la grilla pasa de 0fr (alto 0) a 1fr (alto completo) con transición -->
+              <div [id]="'job-' + job.id"
+                   class="grid transition-[grid-template-rows] duration-500 ease-out"
+                   [class]="isOpen(job.id) ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'">
+                <div class="overflow-hidden">
+                  <ul class="mt-4 space-y-2 text-sm leading-relaxed">
+                    @for (highlight of data.tr(job.highlights); track $index) {
+                      <li class="flex gap-2.5">
+                        <span aria-hidden="true" class="mt-2 size-1 shrink-0 rounded-full bg-accent"></span>
+                        <span>{{ highlight }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <p class="mt-4 border-t border-white/[0.06] pt-4 text-xs leading-relaxed">
+                    <span class="font-mono uppercase tracking-wider text-zinc-500">{{ data.t().technologies }}:</span>
+                    {{ job.technologies }}
+                  </p>
                 </div>
               </div>
+
+              <!-- Botón para abrir y cerrar; aria-expanded / aria-controls informan al lector de pantalla -->
+              <button type="button" (click)="toggle(job.id)"
+                      [attr.aria-expanded]="isOpen(job.id)" [attr.aria-controls]="'job-' + job.id"
+                      class="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-accent">
+                {{ isOpen(job.id) ? data.t().hideDetails : data.t().showDetails }}
+                <span aria-hidden="true" class="inline-block transition-transform duration-300"
+                      [class]="isOpen(job.id) ? 'rotate-180' : ''">↓</span>
+              </button>
             </div>
           </li>
         }
@@ -97,20 +96,15 @@ export class Experience {
   protected readonly data = inject(PortfolioService);
 
   // Ids de los puestos abiertos. Se guarda un Set nuevo en cada cambio para que el signal avise a la vista
-  private readonly open = signal<ReadonlySet<string>>(new Set());
-
-  // Nombre del proyecto a partir de su id, para el texto del enlace
-  protected projectTitle(id: string): string {
-    return this.data.projects.find(p => p.id === id)?.title ?? id;
-  }
+  private readonly openIds = signal<ReadonlySet<string>>(new Set());
 
   protected isOpen(id: string): boolean {
-    return this.open().has(id);
+    return this.openIds().has(id);
   }
 
-  // Abre el puesto si está cerrado y lo cierra si está abierto (se pueden tener varios abiertos)
+  // Abre el puesto si está cerrado y lo cierra si está abierto (pueden estar varios abiertos)
   protected toggle(id: string): void {
-    this.open.update(current => {
+    this.openIds.update(current => {
       const next = new Set(current);
       if (next.has(id)) {
         next.delete(id);

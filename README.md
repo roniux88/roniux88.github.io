@@ -1,59 +1,20 @@
-# Portfolio
+# Portfolio · Ronny Mesén Porras
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.7.
+Portafolio personal en español e inglés: **https://roniux88.github.io**
 
-## Development server
+Hecho con Angular (Signals, componentes standalone) y Tailwind CSS v4. Se publica en GitHub Pages con GitHub Actions en cada `push` a `main`.
 
-To start a local development server, run:
-
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Ejecutar en local
 
 ```bash
-ng generate component component-name
+npm install
+npm start        # http://localhost:4200
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Editar el contenido
 
-```bash
-ng generate --help
-```
+Todos los textos y datos (perfil, experiencia, proyectos y traducciones) están en `src/app/core/portfolio.data.ts`.
 
-## Building
+## Créditos
 
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Íconos de [Devicon](https://devicon.dev) y [Simple Icons](https://simpleicons.org). Logo de AJAX: "AJAX logo" de gengns, [CC BY-SA 4.0](https://commons.wikimedia.org/wiki/File:AJAX_logo_by_gengns.svg).

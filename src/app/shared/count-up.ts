@@ -1,5 +1,8 @@
 import { DestroyRef, Directive, ElementRef, afterNextRender, inject, input } from '@angular/core';
 
+// Duración del conteo (milisegundos)
+const COUNT_DURATION_MS = 1400;
+
 // Directiva: cuando la cifra entra en pantalla, cuenta desde 0 hasta su valor (ej. "10+" → 0+, 1+, 2+ … 10+)
 // Uso: <dd [appCountUp]="'10+'"></dd>  (el elemento va vacío: la directiva escribe el texto)
 @Directive({ selector: '[appCountUp]' })
@@ -29,11 +32,10 @@ export class CountUp {
         if (!entry.isIntersecting) return;
         observer.disconnect();
 
-        const duration = 1400; // milisegundos
         const start = performance.now();
         // requestAnimationFrame: dibuja un cuadro por refresco de pantalla (animación fluida)
         const tick = (now: number) => {
-          const progress = Math.min((now - start) / duration, 1);
+          const progress = Math.min((now - start) / COUNT_DURATION_MS, 1);
           const eased = 1 - Math.pow(1 - progress, 3); // ease-out: rápido al inicio, frena al final
           element.textContent = `${Math.round(target * eased)}${suffix}`;
           if (progress < 1) frame = requestAnimationFrame(tick);
